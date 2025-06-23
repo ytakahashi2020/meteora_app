@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "WebFetch(domain:docs.meteora.ag)",
+      "WebFetch(domain:github.com)",
+      "Bash(git init:*)"
+    ],
+    "deny": []
+  }
+}
