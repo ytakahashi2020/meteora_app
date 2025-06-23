@@ -4,7 +4,18 @@
       "Bash(node:*)",
       "WebFetch(domain:docs.meteora.ag)",
       "WebFetch(domain:github.com)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git commit:*)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Bash(rm:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

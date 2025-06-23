@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd meteora-ui && npm run build",
+  "outputDirectory": "meteora-ui/.next",
+  "installCommand": "cd meteora-ui && npm install",
+  "framework": "nextjs"
+}
