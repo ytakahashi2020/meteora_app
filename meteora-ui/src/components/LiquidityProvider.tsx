@@ -7,6 +7,7 @@ import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, getAccount } from '@solana
 import DLMM from '@meteora-ag/dlmm';
 import { autoFillYByStrategy, StrategyType } from '@meteora-ag/dlmm';
 import BN from 'bn.js';
+import { useToast } from './ToastProvider';
 
 const SOL_USDC_POOL = new PublicKey('5rCf1DM8LjKTw4YqhnoLcngyZYeNnQqztScTogYHAS6');
 const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
@@ -14,6 +15,7 @@ const USDC_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
 export default function LiquidityProvider() {
   const { publicKey, signTransaction, signAllTransactions } = useWallet();
   const { connection } = useConnection();
+  const { showSuccess, showError } = useToast();
   
   const [solAmount, setSolAmount] = useState<string>('');
   const [usdcAmount, setUsdcAmount] = useState<string>('');
@@ -124,26 +126,32 @@ export default function LiquidityProvider() {
 
   const handleAddLiquidity = async () => {
     if (!publicKey || !dlmmPool || !activeBin || !signTransaction || !signAllTransactions) {
-      alert('Please connect your wallet first');
+      showError('Wallet Not Connected', 'Please connect your wallet to add liquidity');
       return;
     }
 
     if (!solAmount || parseFloat(solAmount) <= 0) {
-      alert('Please enter a valid SOL amount');
+      showError('Invalid Amount', 'Please enter a valid SOL amount');
       return;
     }
 
     // Check SOL balance
     const solAmountNum = parseFloat(solAmount);
     if (solAmountNum > solBalance) {
-      alert(`Insufficient SOL balance. You have ${solBalance.toFixed(4)} SOL but need ${solAmountNum} SOL`);
+      showError(
+        'Insufficient SOL Balance', 
+        `You have ${solBalance.toFixed(4)} SOL but need ${solAmountNum} SOL`
+      );
       return;
     }
 
     // Check USDC balance
     const requiredUsdcAmount = autoCalculateUsdc ? parseFloat(usdcAmount) : parseFloat(usdcAmount);
     if (requiredUsdcAmount > usdcBalance) {
-      alert(`Insufficient USDC balance. You have ${usdcBalance.toFixed(6)} USDC but need ${requiredUsdcAmount.toFixed(6)} USDC`);
+      showError(
+        'Insufficient USDC Balance', 
+        `You have ${usdcBalance.toFixed(6)} USDC but need ${requiredUsdcAmount.toFixed(6)} USDC`
+      );
       return;
     }
 
@@ -193,7 +201,11 @@ export default function LiquidityProvider() {
       const txHash = await connection.sendRawTransaction(signedTx.serialize());
       await connection.confirmTransaction(txHash);
 
-      alert(`Position created successfully! TX: ${txHash}`);
+      showSuccess(
+        'Liquidity Added Successfully!',
+        `Position created with ${solAmountNum} SOL and ${requiredUsdcAmount.toFixed(6)} USDC`,
+        txHash
+      );
       
       // Reload positions
       const { userPositions: newPositions } = await dlmmPool.getPositionsByUserAndLbPair(publicKey) as { userPositions: unknown[] };
@@ -215,7 +227,10 @@ export default function LiquidityProvider() {
       setUsdcAmount('');
     } catch (error) {
       console.error('Failed to add liquidity:', error);
-      alert('Failed to add liquidity. Please try again.');
+      showError(
+        'Transaction Failed',
+        error instanceof Error ? error.message : 'Failed to add liquidity. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -223,7 +238,7 @@ export default function LiquidityProvider() {
 
   const handleClosePosition = async (position: { publicKey: PublicKey; positionData: { positionBinData: { binId: number }[] } }) => {
     if (!publicKey || !dlmmPool || !signTransaction) {
-      alert('Please connect your wallet first');
+      showError('Wallet Not Connected', 'Please connect your wallet to close positions');
       return;
     }
 
@@ -242,20 +257,29 @@ export default function LiquidityProvider() {
 
       const transactions = Array.isArray(removeLiquidityTx) ? removeLiquidityTx : [removeLiquidityTx];
       
+      let lastTxHash = '';
       for (const tx of transactions) {
         const signedTx = await signTransaction(tx);
         const txHash = await connection.sendRawTransaction(signedTx.serialize());
         await connection.confirmTransaction(txHash);
+        lastTxHash = txHash;
       }
 
-      alert('Position closed successfully!');
+      showSuccess(
+        'Position Closed Successfully!',
+        'Your liquidity has been removed and fees have been claimed',
+        lastTxHash
+      );
       
       // Reload positions
       const { userPositions: newPositions } = await dlmmPool.getPositionsByUserAndLbPair(publicKey) as { userPositions: unknown[] };
       setUserPositions(newPositions);
     } catch (error) {
       console.error('Failed to close position:', error);
-      alert('Failed to close position. Please try again.');
+      showError(
+        'Failed to Close Position',
+        error instanceof Error ? error.message : 'Failed to close position. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }

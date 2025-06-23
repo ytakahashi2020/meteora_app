@@ -4,6 +4,7 @@ import React, { FC, ReactNode, useMemo } from 'react';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
+import { ToastProvider } from './ToastProvider';
 import '@solana/wallet-adapter-react-ui/styles.css';
 
 interface WalletProviderClientProps {
@@ -26,7 +27,9 @@ export const WalletProviderClient: FC<WalletProviderClientProps> = ({ children }
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
-          {children}
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
