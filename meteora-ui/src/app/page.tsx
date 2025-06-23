@@ -1,5 +1,5 @@
-import WalletConnect from '@/components/WalletConnect';
-import LiquidityProvider from '@/components/LiquidityProvider';
+import WalletConnectClient from '@/components/WalletConnectClient';
+import LiquidityProviderClient from '@/components/LiquidityProviderClient';
 
 export default function Home() {
   return (
@@ -29,11 +29,11 @@ export default function Home() {
           <p className="text-lg text-gray-300 mb-8 max-w-2xl mx-auto">
             Provide liquidity to the SOL-USDC pool with advanced Dynamic Liquidity Market Making on Meteora Protocol
           </p>
-          <WalletConnect />
+          <WalletConnectClient />
         </header>
 
         <main className="mb-12">
-          <LiquidityProvider />
+          <LiquidityProviderClient />
         </main>
 
         <footer className="text-center pt-8 border-t border-gray-700/50">
